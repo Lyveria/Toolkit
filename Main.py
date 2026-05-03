@@ -13,6 +13,7 @@ from rich.text import Text
 from modules.sysinfo import get_system_info
 from modules.hardware.cpu.cpuinfo import get_cpu_info
 from modules.hardware.cpu.cpudetailinfo import get_cpu_detail_info
+from config import GOV_TRANSLATIONS, APP_TITLE, MENU_TITLES
 from modules.hardware.cpu.cpufreq_manager import (
     set_governor,
     toggle_turbo_boost,
@@ -20,26 +21,6 @@ from modules.hardware.cpu.cpufreq_manager import (
     remove_saved_settings,
     is_saved_settings_exist
 )
-
-GOV_MAP = {
-    "performance": "Производительный",
-    "powersave": "Энергосберегающий",
-    "ondemand": "По требованию",
-    "conservative": "Консервативный",
-    "schedutil": "Оптимизированный",
-    "userspace": "Пользовательский"
-}
-
-GOV_RUS = {
-    "performance": "Производительный",
-    "powersave": "Энергосберегающий",
-    "ondemand": "По требованию",
-    "conservative": "Консервативный",
-    "schedutil": "Оптимизированный",
-    "userspace": "Пользовательский"
-}
-
-
 class TopBar(Static):
     def compose(self) -> ComposeResult:
         yield Button("В главное меню", id="btn_home")
@@ -148,7 +129,7 @@ class ToolkitApp(App):
                 yield RightBottom(Text("[12:00] Интерфейс готов"))
 
     def update_header(self, text: str) -> None:
-        self.query_one("#topbar-title", Static).update(f"ТУЛКИТ v 1.0 | {text} | MondManu")
+        self.query_one("#topbar-title", Static).update(APP_TITLE.format(mode=text))
 
     def read_sys(self, path):
         if os.path.exists(path):
@@ -197,7 +178,7 @@ class ToolkitApp(App):
         if avail_raw:
             for g in avail_raw.split():
                 is_active = (g == current_gov)
-                name = GOV_MAP.get(g, g)
+                name = GOV_TRANSLATIONS.get(g, g)
                 btn = Button(f"{'●' if is_active else '○'} {name}", id=f"set_gov_{g}")
                 if is_active:
                     btn.styles.color = "#00ff00"
@@ -323,7 +304,7 @@ class ToolkitApp(App):
             success, msg = set_governor(gov)
             log = self.query_one("#terminal-log", RichLog)
             if success:
-                gov_rus = GOV_RUS.get(gov, gov)
+                gov_rus = GOV_TRANSLATIONS.get(gov, gov)
                 log.write(f"[green]✓ Установлен режим: {gov_rus}[/green]")
                 self.add_to_journal(f"Режим CPU изменён на {gov_rus}")
                 self.update_cpu_info_panel()
